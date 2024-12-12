@@ -1,0 +1,609 @@
+<<<<<<< HEAD
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Meta information for responsive design and character encoding -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SupportBot - Customer Service Chatbot</title>
+
+    <!-- Internal CSS for styling the chatbot interface -->
+    <style>
+
+        /* Styling for the body */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Styling for the main chat container */
+        #chat-container {
+            width: 100%;
+            max-width: 450px; 
+            height: 600px; 
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 10px;
+        }
+
+        /* Styling for the header */
+        #chat-header {
+            background-color: #0084ff;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px 8px 0 0;
+        }
+
+        /* Chatbox area where messages are displayed */
+        #chat-box {
+            flex: 1; 
+            padding: 10px;
+            overflow-y: auto;
+            border-bottom: 1px solid #ccc;
+            display: flex;
+            flex-direction: column;
+            gap: 10px; 
+        }
+
+        /* Shared styling for all messages (user and bot) */
+        .message {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 12px;
+            max-width: 80%;
+            word-wrap: break-word;
+            opacity: 0; 
+            transform: translateY(10px);
+            animation: fadeIn 0.3s forwards;
+        }
+
+        /* User message styling */
+        .user-message {
+            align-self: flex-end;
+            background-color: #0084ff;
+            color: white;
+        }
+
+        /* Bot message styling */
+        .bot-message {
+            align-self: flex-start;
+            background-color: #e5e5ea;
+            color: black;
+        }
+
+        /* Styling for the input area and send button */
+        #input-container {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ccc;
+        }
+
+        #user-input {
+            flex: 1;               /* Input box takes most of the space */
+            padding: 10px;
+            border: 1px solid #ccc; /* Gray border for clarity */
+            border-radius: 4px;    /* Slightly rounded edges */
+            font-size: 14px;
+        }
+
+        /* Send button styling */
+        #send-btn {
+            margin-left: 10px;
+            padding: 10px;
+            background-color: #0084ff; /* Blue background */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #send-btn:hover {
+            background-color: #006bbf;
+        }
+
+        /* Typing indicator styling */
+        #typing-indicator {
+            align-self: flex-start;
+            font-style: italic;
+            font-size: 14px;
+            color: gray;
+            display: none;
+            padding: 5px;
+        }
+
+        /* Styling for the "Provide Feedback" button */
+        #feedback-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #0084ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            align-self: center;
+        }
+
+        #feedback-btn:hover {
+            background-color: #006bbf;
+        }
+
+        /* Feedback modal styling */
+        #feedback-modal {
+            display: none;
+            position: fixed; 
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center; 
+        }
+
+        /* Modal content box styling */
+        #feedback-modal > div {
+            background: white;
+            padding: 20px;
+            border-radius: 8px; 
+            width: 300px;
+            text-align: center;
+        }
+
+        /* Animation for messages appearing in the chatbox */
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(10px); 
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive design for smaller screens */
+        @media (max-width: 600px) {
+            #chat-container {
+                width: 100%; 
+                max-width: 100%;
+                height: 90vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Chat container -->
+    <div id="chat-container">
+        <div id="chat-header">SupportBot - Customer Service Chatbot</div>
+        <div id="chat-box">
+            <div id="typing-indicator">SupportBot is typing...</div>
+        </div>
+        <div id="input-container">
+            <input id="user-input" type="text" placeholder="Type your message here...">
+            <button id="send-btn">Send</button>
+        </div>
+        <button id="feedback-btn">Provide Feedback</button>
+    </div>
+
+    <!-- Feedback modal for submitting user feedback -->
+    <div id="feedback-modal">
+        <div>
+            <h3>Provide Feedback</h3>
+            <textarea id="feedback-input" placeholder="Type your feedback here..." style="width: 100%; height: 80px; margin: 10px 0; padding: 10px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+            <button id="submit-feedback" style="padding: 10px 20px; background-color: #0084ff; color: white; border: none; border-radius: 4px; cursor: pointer;">Submit</button>
+            <button id="close-feedback" style="margin-top: 10px; padding: 5px 10px; background-color: #ccc; border: none; border-radius: 4px; cursor: pointer;">Close</button>
+        </div>
+    </div>
+
+    <!-- JavaScript for chatbot interactivity -->
+    <script>
+        const chatBox = document.getElementById("chat-box");
+        const userInput = document.getElementById("user-input");
+        const sendBtn = document.getElementById("send-btn");
+        const feedbackBtn = document.getElementById("feedback-btn");
+        const feedbackModal = document.getElementById("feedback-modal");
+        const feedbackInput = document.getElementById("feedback-input");
+        const submitFeedbackBtn = document.getElementById("submit-feedback");
+        const closeFeedbackBtn = document.getElementById("close-feedback");
+        const typingIndicator = document.getElementById("typing-indicator");
+
+        // Function to add a message to the chatbox
+        function addMessage(text, isUser = false) {
+            const message = document.createElement("div");
+            message.classList.add("message", isUser ? "user-message" : "bot-message");
+            message.textContent = text;
+            chatBox.appendChild(message);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Display the initial bot message on page load
+        window.onload = () => {
+            addMessage("Hi, how can I help you?", false);
+        };
+
+        // Event listener for the "Send" button
+        sendBtn.addEventListener("click", async () => {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, true);
+            userInput.value = "";
+
+            // Show typing indicator while fetching response
+            typingIndicator.style.display = "block";
+
+            try {
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message }),
+                });
+                if (!response.ok) throw new Error("Failed to fetch response.");
+                const data = await response.json();
+
+                // Hide typing indicator and display bot's response
+                typingIndicator.style.display = "none";
+                addMessage(data.response);
+            } catch (error) {
+                console.error("Error:", error);
+                typingIndicator.style.display = "none";
+                addMessage("Sorry, something went wrong.");
+            }
+        });
+
+        // Open feedback modal when "Provide Feedback" button is clicked
+        feedbackBtn.addEventListener("click", () => {
+            feedbackModal.style.display = "flex";
+        });
+
+        // Close feedback modal
+        closeFeedbackBtn.addEventListener("click", () => {
+            feedbackModal.style.display = "none";
+            feedbackInput.value = ""; // Clear the feedback input
+        });
+
+        // Submit feedback to the server
+        submitFeedbackBtn.addEventListener("click", async () => {
+            const feedback = feedbackInput.value.trim();
+            if (!feedback) {
+                alert("Please enter feedback before submitting.");
+                return;
+            }
+
+            try {
+                const response = await fetch("/feedback", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ feedback }),
+                });
+                if (!response.ok) throw new Error("Failed to send feedback.");
+                alert("Thank you for your feedback!");
+                feedbackModal.style.display = "none";
+                feedbackInput.value = "";
+            } catch (error) {
+                console.error("Error submitting feedback:", error);
+                alert("Failed to submit feedback. Please try again.");
+            }
+        });
+    </script>
+</body>
+</html>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Meta information for responsive design and character encoding -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SupportBot - Customer Service Chatbot</title>
+
+    <!-- Internal CSS for styling the chatbot interface -->
+    <style>
+
+        /* Styling for the body */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Styling for the main chat container */
+        #chat-container {
+            width: 100%;
+            max-width: 450px; 
+            height: 600px; 
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 10px;
+        }
+
+        /* Styling for the header */
+        #chat-header {
+            background-color: #0084ff;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px 8px 0 0;
+        }
+
+        /* Chatbox area where messages are displayed */
+        #chat-box {
+            flex: 1; 
+            padding: 10px;
+            overflow-y: auto;
+            border-bottom: 1px solid #ccc;
+            display: flex;
+            flex-direction: column;
+            gap: 10px; 
+        }
+
+        /* Shared styling for all messages (user and bot) */
+        .message {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 12px;
+            max-width: 80%;
+            word-wrap: break-word;
+            opacity: 0; 
+            transform: translateY(10px);
+            animation: fadeIn 0.3s forwards;
+        }
+
+        /* User message styling */
+        .user-message {
+            align-self: flex-end;
+            background-color: #0084ff;
+            color: white;
+        }
+
+        /* Bot message styling */
+        .bot-message {
+            align-self: flex-start;
+            background-color: #e5e5ea;
+            color: black;
+        }
+
+        /* Styling for the input area and send button */
+        #input-container {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ccc;
+        }
+
+        #user-input {
+            flex: 1;               /* Input box takes most of the space */
+            padding: 10px;
+            border: 1px solid #ccc; /* Gray border for clarity */
+            border-radius: 4px;    /* Slightly rounded edges */
+            font-size: 14px;
+        }
+
+        /* Send button styling */
+        #send-btn {
+            margin-left: 10px;
+            padding: 10px;
+            background-color: #0084ff; /* Blue background */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #send-btn:hover {
+            background-color: #006bbf;
+        }
+
+        /* Typing indicator styling */
+        #typing-indicator {
+            align-self: flex-start;
+            font-style: italic;
+            font-size: 14px;
+            color: gray;
+            display: none;
+            padding: 5px;
+        }
+
+        /* Styling for the "Provide Feedback" button */
+        #feedback-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #0084ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            align-self: center;
+        }
+
+        #feedback-btn:hover {
+            background-color: #006bbf;
+        }
+
+        /* Feedback modal styling */
+        #feedback-modal {
+            display: none;
+            position: fixed; 
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center; 
+        }
+
+        /* Modal content box styling */
+        #feedback-modal > div {
+            background: white;
+            padding: 20px;
+            border-radius: 8px; 
+            width: 300px;
+            text-align: center;
+        }
+
+        /* Animation for messages appearing in the chatbox */
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(10px); 
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive design for smaller screens */
+        @media (max-width: 600px) {
+            #chat-container {
+                width: 100%; 
+                max-width: 100%;
+                height: 90vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Chat container -->
+    <div id="chat-container">
+        <div id="chat-header">SupportBot - Customer Service Chatbot</div>
+        <div id="chat-box">
+            <div id="typing-indicator">SupportBot is typing...</div>
+        </div>
+        <div id="input-container">
+            <input id="user-input" type="text" placeholder="Type your message here...">
+            <button id="send-btn">Send</button>
+        </div>
+        <button id="feedback-btn">Provide Feedback</button>
+    </div>
+
+    <!-- Feedback modal for submitting user feedback -->
+    <div id="feedback-modal">
+        <div>
+            <h3>Provide Feedback</h3>
+            <textarea id="feedback-input" placeholder="Type your feedback here..." style="width: 100%; height: 80px; margin: 10px 0; padding: 10px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+            <button id="submit-feedback" style="padding: 10px 20px; background-color: #0084ff; color: white; border: none; border-radius: 4px; cursor: pointer;">Submit</button>
+            <button id="close-feedback" style="margin-top: 10px; padding: 5px 10px; background-color: #ccc; border: none; border-radius: 4px; cursor: pointer;">Close</button>
+        </div>
+    </div>
+
+    <!-- JavaScript for chatbot interactivity -->
+    <script>
+        const chatBox = document.getElementById("chat-box");
+        const userInput = document.getElementById("user-input");
+        const sendBtn = document.getElementById("send-btn");
+        const feedbackBtn = document.getElementById("feedback-btn");
+        const feedbackModal = document.getElementById("feedback-modal");
+        const feedbackInput = document.getElementById("feedback-input");
+        const submitFeedbackBtn = document.getElementById("submit-feedback");
+        const closeFeedbackBtn = document.getElementById("close-feedback");
+        const typingIndicator = document.getElementById("typing-indicator");
+
+        // Function to add a message to the chatbox
+        function addMessage(text, isUser = false) {
+            const message = document.createElement("div");
+            message.classList.add("message", isUser ? "user-message" : "bot-message");
+            message.textContent = text;
+            chatBox.appendChild(message);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Display the initial bot message on page load
+        window.onload = () => {
+            addMessage("Hi, how can I help you?", false);
+        };
+
+        // Event listener for the "Send" button
+        sendBtn.addEventListener("click", async () => {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, true);
+            userInput.value = "";
+
+            // Show typing indicator while fetching response
+            typingIndicator.style.display = "block";
+
+            try {
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message }),
+                });
+                if (!response.ok) throw new Error("Failed to fetch response.");
+                const data = await response.json();
+
+                // Hide typing indicator and display bot's response
+                typingIndicator.style.display = "none";
+                addMessage(data.response);
+            } catch (error) {
+                console.error("Error:", error);
+                typingIndicator.style.display = "none";
+                addMessage("Sorry, something went wrong.");
+            }
+        });
+
+        // Open feedback modal when "Provide Feedback" button is clicked
+        feedbackBtn.addEventListener("click", () => {
+            feedbackModal.style.display = "flex";
+        });
+
+        // Close feedback modal
+        closeFeedbackBtn.addEventListener("click", () => {
+            feedbackModal.style.display = "none";
+            feedbackInput.value = ""; // Clear the feedback input
+        });
+
+        // Submit feedback to the server
+        submitFeedbackBtn.addEventListener("click", async () => {
+            const feedback = feedbackInput.value.trim();
+            if (!feedback) {
+                alert("Please enter feedback before submitting.");
+                return;
+            }
+
+            try {
+                const response = await fetch("/feedback", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ feedback }),
+                });
+                if (!response.ok) throw new Error("Failed to send feedback.");
+                alert("Thank you for your feedback!");
+                feedbackModal.style.display = "none";
+                feedbackInput.value = "";
+            } catch (error) {
+                console.error("Error submitting feedback:", error);
+                alert("Failed to submit feedback. Please try again.");
+            }
+        });
+    </script>
+</body>
+</html>
+>>>>>>> 4f10d78437bf31c0feec612c4720144541ce9436
