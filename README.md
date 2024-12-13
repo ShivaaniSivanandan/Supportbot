@@ -2,10 +2,10 @@
 This is a Flask-based chatbot designed to assist customers using the Bitext Sample Pre-built Customer Support Dataset for English. The chatbot uses a fine-tuned transformer model to classify user intents and provide predefined responses.
 
 ## Features:
--**Intent Recognition:** Identifies user intents based on natural language queries.
--**Predefined Responses:** Returns relevant answers based on the detected intent.
--**Logging:** Logs user queries, predicted intents, and confidence scores for analysis.
--**Feedback Systems:** Allows users to provide feedback to improve the chatbot.
+1. **Intent Recognition:** Identifies user intents based on natural language queries.
+2. **Predefined Responses:** Returns relevant answers based on the detected intent. 
+3.**Logging:** Logs user queries, predicted intents, and confidence scores for analysis.
+4. **Feedback Systems:** Allows users to provide feedback to improve the chatbot.
 
 ## Technologies Used:
 -**Flask:** Backend framework for handling requests and routing.
